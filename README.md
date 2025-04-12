@@ -1,5 +1,4 @@
-# Full-Stack
- Everything I've learned in Full Stack Development
+# Full-Stack -  Everything I've learned in Full Stack Development
 
 ## HTML - Hyper Text Markup Language :star:
 
