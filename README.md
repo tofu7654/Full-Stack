@@ -8,9 +8,9 @@
 * void elements - elements w/ no closing tag i.e <img>
     - <figure> <figcaption></figcaption> </figure> associates caption to image
 * attribute - value used to adjust element behavior <img src=”image location” alt=”Cat sleeping in the grass”>
-    - placed inside the opening tag of an element
-    - alt attribute is a description of pic; displayed if image fails to load
-    - <div id=”root”></div> ; <element attrbute = “value”>
+    * placed inside the opening tag of an element
+    * alt attribute is a description of pic; displayed if image fails to load
+    * <div id=”root”></div> ; <element attrbute = “value”>
 * <input type=”checkbox” checked/> //checked box
 
 * Link Element - used to link external resources
@@ -26,7 +26,7 @@ target = “_blank” opens link in a new tab
 
 <link rel=”icon” href=”favicon.ico” /> //favorite icon displayed on browser tab
 
-##HTML Boilerplate - ready made template for webpages; contains essential elements; great starting point 
+## HTML Boilerplate - ready made template for webpages; contains essential elements; great starting point 
 
 - <!DOCTYPE html> //version of html
 - <html lang=”en”> wraps around entire doc and specifies language
