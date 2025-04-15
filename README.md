@@ -21,5 +21,5 @@
 ### CSS styling
 * whether *in-line styles* or otherwise, uses css; but not best practice
 * should create a **css style sheet**
-
+* *in-line* styling is done by adding the *style* attribute to the opening tag of an element.
 
