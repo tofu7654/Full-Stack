@@ -18,7 +18,9 @@
 * **button**; placing a button onto webpage
 * **input**; allowing user to input text to webpage; *placeholder* attribute for message in input bar before user types
 * **head**; meta data and title that appears in browser tab for *search engine optimization*
-* **nav** contains many tags with links to external resources 
+* **nav** contains many tags with links to external resources; has semantic meaning so any crawlers without a visual will know it is a navigation
+
+*Pro tip*: type '!' and vscode will write the boilerplate code for you
 
 ### Section 2 - CSS styling
 
@@ -42,3 +44,13 @@
         color: black;
     }
 
+    * { 
+
+    }
+
+* the hierarchy of these style containers is tag -> class -> id; i.e the changes using an id will override the other too etc.
+
+#### Fonts 
+
+* get fonts from google fonts and place the link in the head section in order to use.
+* *fontawesome.com* is great for getting icons; must include the fontawesome cdn link in head first.
