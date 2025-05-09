@@ -2,7 +2,7 @@
 
 ## Section 1 - HTML - Hyper Text Markup Language :star:
 
-* uses elements for structuring websites 
+* uses elements for structuring websites
 * elements contain attributes to further specify element function
 
 ### 1.1 - Fundamental Tags :bricks:
@@ -50,7 +50,16 @@
 
 * the hierarchy of these style containers is tag -> class -> id; i.e the changes using an id will override the other too etc.
 
-#### Fonts 
+#### Fonts
 
 * get fonts from google fonts and place the link in the head section in order to use.
 * *fontawesome.com* is great for getting icons; must include the fontawesome cdn link in head first.
+
+#### 2.0 CSS Fundamentals
+
+* styles.css contains all of the styles for an html page
+* must be linked to an HTML file by using *link* tag with rel="stylesheet" and href="styles.css"
+* the asterisk symbol (*), typically at the top is the default styles for all elements
+* **variables:** defined at the top of css file using :root{ --color-variable: #44342;} for example
+  * when using a variable use var(--var--name)
+  
