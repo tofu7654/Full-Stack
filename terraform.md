@@ -1,5 +1,7 @@
 # Terraform Notes
 
+_______________________
+
 ## Intro to IaC (Infrastructure as Code)
 
 business -> business analyst -> solutions architect -> would be deployed on-premises, where new hardware would have to be ordered
