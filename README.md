@@ -62,4 +62,4 @@
 * the asterisk symbol (*), typically at the top is the default styles for all elements
 * **variables:** defined at the top of css file using :root{ --color-variable: #44342;} for example
   * when using a variable use var(--var--name)
-  
+
