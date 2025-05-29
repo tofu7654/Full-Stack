@@ -1,7 +1,5 @@
 # Terraform Notes
 
-___
-
 ## Chapter 1: Intro to IaC (Infrastructure as Code)
 
 business -> business analyst -> solutions architect -> would be deployed on-premises, where new hardware would have to be ordered
@@ -154,8 +152,6 @@ Don't have to remember all of these. Use terraform docs which are very comprehen
 *terraform destroy* command destroys all resources
 
 ## Chapter 4: Terraform Basics
-
-___
 
 terraform init - terraform downloads plugins given the providers being used; can be run as many times as needed without impacting infrastructure
 
