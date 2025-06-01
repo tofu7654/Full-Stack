@@ -269,3 +269,117 @@ Ex:
         type = tuple([string, number, bool])
         default = ["cat", 7, true]
     }
+
+##### Variable Assigning Options
+
+Option 1:
+If you do *not* provide default values for variables, terraform will prompt you to enter the values in the terminal *interactively*. (when you run terraform apply)
+
+Option 2:
+Or can use command-line flags like the following:
+
+    $ terraform apply -var "filename=/root/pets.txt" -var "content=We love Pets!" -var "prefix=Mrs" -var "separator=." -var "length=2"
+
+Option 3:
+You can also use environment variables like the following (CLI):
+
+    $ export TF_VAR_filename="/root/pets.txt" //sets the variable 
+    called filename to the displayed path
+    $ export TF_VAR_content="We love pets!"  
+    $ export TF_VAR_prefix="Mrs"
+    $ export TF_VAR_separator="."
+    $ export TF_VAR_length="2"
+    $ terraform apply
+
+Option 4:
+Can also use variable definition files like terraform.tfvars or .terraform.tfvars.json file: (Will be automatically loaded in by terraform after running terraform apply)
+
+    In terraform.tfvars: 
+    filename = "/root/pets.txt"
+    content = "We love pets!"
+    prefix = "Mrs"
+    separator = "."
+    length = "2"
+
+Can use any of these options to define variables, but there is *precedence*
+
+Precedence (lowest priority -> highest priority)
+
+Env. Variables -> terraform.tfvars -> *.auto.tfvars -> -var or -var-file command line flags
+
+### Resource Attributes
+
+What if you want to set one of the arguments for a *resource* to an attribute of another *resource*:
+
+This accesses the id attribute of my-pet resource which is a random_pet resource type
+
+${random_pet.my-pet.id} //syntax is ${resource_type.resource_name.attribute}
+
+The *dependencies* of a resource are created first.
+Ex: The random_pet will be created first. This is an **implicit declaration**
+
+    resource "local_file" "pet" {
+        filename = var.filename
+        content ="My favorite pet is ${random_pet.my-pet.id}"
+    }
+
+Note: They are deleted in the *reverse* order of creation. i.e local-file is destored first
+
+Ex: **Explicit Dependency** as denoted by the depends_on; used when there is no implict declaration
+
+    resource "local_file" "pet" {
+        filename = var.filename
+        content ="My favorite pet is Mr.Cat"
+        depends_on = [
+            random_pet.my-pet //resource type and name
+        ]
+    }
+
+### Output Variables
+
+We have used input variables so far, but what about *output variables*
+
+Ex: syntax of declaring an output variable
+
+    output "<variable_name>" {
+        value = "<variable_value>"
+        <arguments>
+    }
+
+The output variables will be printed when using terraform apply
+
+*terraform output* - prints all the defined outputs in the current working directory
+
+* terraform output var-name - prints value of specific output variable
+
+Use Case:
+
+Used to feed variables to other tools or to view a variable *quickly on-screen*
+
+## Chapter 5: Terraform State
+
+When running plan and apply, terraform checks the *state* and creates an execution plan accordingly.
+
+**terraform.tfstate** - state file, which was created as a result of first terraform apply command; JSON file with details of infrastructure; **ALWAYS CREATED AFTER TERRAFORM APPLY ONCE**
+
+* is the single source of truth for terraform to understand current state
+
+Note: Even if you deleted resource blocks with dependencies, terraform uses the state file to remember the dependencies and determine destruction order
+
+Benefits
+
+Improves the performance:
+
+Using --refresh=false makes use of the cache of all the resources rather than referring to the state everytime; increases performance immensely
+
+Collaboration:
+
+Every user in the team should always have the latest terraform.tfstate. Can store this in a remote state store (s3, google cloud, terraform cloud, etc)
+
+May cause *errors* if people use terraform at the same time
+
+The state file contains *sensitive information* like ips and ssh keys, passwords for DBs in *plain text*.
+
+* So we must store the state files in secure locations (like remote backend systems, s3, terraform cloud)
+
+* Do NOT manually edit the state file, use state commands if needed.
