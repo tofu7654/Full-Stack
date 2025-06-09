@@ -383,3 +383,54 @@ The state file contains *sensitive information* like ips and ssh keys, passwords
 * So we must store the state files in secure locations (like remote backend systems, s3, terraform cloud)
 
 * Do NOT manually edit the state file, use state commands if needed.
+
+## Section 6: Working with Terraform
+
+### Terraform Commands
+
+*terraform validate* - check if syntax used is correct, gives hints to fix any syntax errors
+
+*terraform fmt* - scans config files and puts into more readable format; great for readability
+
+*terraform show* - shows all resources and their attributes; -json flag prints them out in a JSON format
+
+*terraform providers* - lists providers used in this config directory
+
+*terraform providers mirror* - mirrors the provider configs to another directory
+
+*terraform output varname* - print output variables
+
+*terraform apply -refresh-only* - sync terraform to real-world infrastructure; any updates with hardware etc; modifies state file
+
+*terraform graph* - creates visual representation of dependencies of resources; pass through graph visualization software to make sense of it; graphviz (see ppt)
+
+### Mutable vs Immutable Infrastructure
+
+Mutable Infrastructure - software is updated, underlying hardware is not
+
+Config Drift - Some servers may have different versions or configs; leaves infrastructure in complex state; troubleshooting would be difficult
+
+Solution:
+
+Immutable infrastructure - Spin up new web servers with latest update and delete old webservers; if new server updates fail, the old servers are kept
+
+### Lifecycle Rules - go in a resource block
+
+May not want the old resource to be deleted, or want order of deletion to be different:
+
+    lifecycle {
+        create_before_destroy = true //ensures that a change in config will result in a new resource to be created before deleting an old one
+    }
+
+    lifecycle {
+        prevent_destroy = true //prevents this resource from being deleted 
+    }
+    
+    lifecycle { 
+        ignore_changes = [ //accepts any attribute within this list
+            tags 
+        ] //prevents resource from being updates, based on an attribute list 
+    }
+
+### Data Sources
+
