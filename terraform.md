@@ -422,7 +422,7 @@ May not want the old resource to be deleted, or want order of deletion to be dif
         create_before_destroy = true //ensures that a change in config will result in a new resource to be created before deleting an old one
     }
 
-    lifecycle {
+    lifsssecycle {
         prevent_destroy = true //prevents this resource from being deleted 
     }
     
@@ -433,4 +433,107 @@ May not want the old resource to be deleted, or want order of deletion to be dif
     }
 
 ### Data Sources
+
+Terraform only has jurisdiction over the files that it creates. To read attributes from resources out of its control, use *data sources*
+
+Ex: This resource was created with a shell script (not terraform)
+
+    data "local_file" "dog" {
+        filename = "/root/dog.txt"
+    }
+
+There is a data source category for each resource in documentation.
+
+Data source - only *reads* infrastructure, cannot be used to create, update, or dstreeoy
+
+### Meta Arguments
+
+So far we have only been creating 1 resource at a time. We will now create multiple instances of the same resource using *meta arguments*
+
+types: depends_on, lifecycle rules
+
+*count* - define the number of resources we want to create 
+
+Ex:
+
+    resource "local_file" "pet" {
+        filename = var.filename[count.index] //use the count.index to make use of the files in the variable below
+        count = 3 //creates the same file three times, with same name too
+        count = length(var.filename) //creates the # of files defined in filename variable
+    }
+
+    variable "filename"{
+        default = [
+            "/root/pets.txt",
+            "/root/dogs.txt",
+            "/root/cats.txt"  //creates three local files with these 3 names
+        ]
+    }
+
+*Warning* - However, count may cause unwanted behavior when updating and destroying resources. Will get to the desired outcome, but may *delete files unnecessarily*.
+
+*for-each* - can circumvent the issue mentioned above^
+
+for_each only works with *sets* and *maps*
+
+Ex: 
+
+resource "local_file" "pet" {
+    filename = each.value //loops through the filename variable
+    for_each = toset(var.filename) //turns the list in filename variable to a set then loops through
+}
+
+This works because the filename elements are used as maps, not lists. So *keys* are used, *indices are not used*
+
+### Version Constraints 
+
+By default, latest plugin versions are downloaded, but may not want this behavior to occur. Can choose *specific versions* of providers. Instructions in documentation of providers.
+
+Ex: this is how to use a specific version of local provider
+
+    terraform {
+        required_providers {
+            local = {
+                source = "hashicorp/local"
+                version = "1.4.0"
+            }
+        }
+    }
+
+Alternatives: Don't use a particular version, many other ways (ask Chat)
+
+    terraform {
+        required_providers {
+            local = {
+                source = "hashicorp/local"
+                version = "1.4.0"
+            }
+        }
+    }
+
+## Section 7: Terraform with AWS
+
+Services do not have permission to interact with other services by default. Need to apply *IAM roles* to services in order to get that permission.
+
+Other uses:
+
+* providing access to an iam user in other aws account
+* provide access to users outside of AWS
+
+Need: 
+
+    provider "aws" {
+        region = "us-west-2"
+        access_key = "super-secret"
+        secret-Key = "secret" //not good to hard code here, can use *aws configure* or use env variables
+    }
+
+Ex: Create an IAM user using Terraform
+
+    resource "aws_iam_user" "admin-user" {
+        name = "lucy"
+        tags = {
+            Description = "Technical Team Leader"
+        }
+    }
 
