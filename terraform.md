@@ -320,7 +320,7 @@ Ex: The random_pet will be created first. This is an **implicit declaration**
 
     resource "local_file" "pet" {
         filename = var.filename
-        content ="My favorite pet is ${random_pet.my-pet.id}"
+        content ="My favorite pet is ${random_pet.my-pet.id}" //bc we access the pet's attribute before creating
     }
 
 Note: They are deleted in the *reverse* order of creation. i.e local-file is destored first
@@ -330,14 +330,17 @@ Ex: **Explicit Dependency** as denoted by the depends_on; used when there is no 
     resource "local_file" "pet" {
         filename = var.filename
         content ="My favorite pet is Mr.Cat"
-        depends_on = [
+        depends_on = [ //explicitly write depends_on -> explicit declaration
             random_pet.my-pet //resource type and name
         ]
     }
 
 ### Output Variables
 
-We have used input variables so far, but what about *output variables*
+We have used input variables so far, but what about *output variables* 
+
+* input variables - set these to be a resource or value that will be used in your configuration; like a parameter to a function
+* output variables - these values can be retrieved from the configuration; like a return value
 
 Ex: syntax of declaring an output variable
 
@@ -364,25 +367,29 @@ When running plan and apply, terraform checks the *state* and creates an executi
 
 * is the single source of truth for terraform to understand current state
 
-Note: Even if you deleted resource blocks with dependencies, terraform uses the state file to remember the dependencies and determine destruction order
+Note: Even if you deleted resource blocks with dependencies, terraform uses the state file to remember the dependencies and determine destruction order; 
+
+Reflection: terraform state is the main source of truth and the way terraform knows what resources are currently exist and not exist
 
 Benefits
 
 Improves the performance:
 
-Using --refresh=false makes use of the cache of all the resources rather than referring to the state everytime; increases performance immensely
+Using --refresh=false makes use of the cache of all the resources rather than referring to the state everytime; increases performance immensely ; so you can use cache instead of looking through the state file everytime a terraform apply or init is done
 
 Collaboration:
 
 Every user in the team should always have the latest terraform.tfstate. Can store this in a remote state store (s3, google cloud, terraform cloud, etc)
 
-May cause *errors* if people use terraform at the same time
+May cause *errors* if people use terraform at the same time 
 
 The state file contains *sensitive information* like ips and ssh keys, passwords for DBs in *plain text*.
 
 * So we must store the state files in secure locations (like remote backend systems, s3, terraform cloud)
 
 * Do NOT manually edit the state file, use state commands if needed.
+
+* Never store the state file somewhere insecure because it may have confidential secrets -> passwords, keys; store somewhere secure
 
 ## Section 6: Working with Terraform
 
@@ -402,7 +409,7 @@ The state file contains *sensitive information* like ips and ssh keys, passwords
 
 *terraform apply -refresh-only* - sync terraform to real-world infrastructure; any updates with hardware etc; modifies state file
 
-*terraform graph* - creates visual representation of dependencies of resources; pass through graph visualization software to make sense of it; graphviz (see ppt)
+*terraform graph* - creates visual representation of dependencies of resources; pass through graph visualization software to make sense of it; graphviz (see ppt); cool
 
 ### Mutable vs Immutable Infrastructure
 
@@ -444,13 +451,13 @@ Ex: This resource was created with a shell script (not terraform)
 
 There is a data source category for each resource in documentation.
 
-Data source - only *reads* infrastructure, cannot be used to create, update, or dstreeoy
+Data source - only *reads* infrastructure, cannot be used to create, update, or destroy
 
 ### Meta Arguments
 
 So far we have only been creating 1 resource at a time. We will now create multiple instances of the same resource using *meta arguments*
 
-types: depends_on, lifecycle rules
+types: depends_on (explicit declaration), lifecycle rules
 
 *count* - define the number of resources we want to create 
 
@@ -537,3 +544,39 @@ Ex: Create an IAM user using Terraform
         }
     }
 
+## Section 8: Remote State
+
+terraform.tfstate - created once in local dir when do terraform apply; terraform uses it to compare to you .tf files to determine what has changed -> it is the *source of truth*
+
+* also keep track of metadata -> information about information, not the actual resources themselves; things like timestamps, dependenceies; metadata is used to track dependencies and relationships in the state file
+
+terraform.tfstate - created once in local dir when do terraform apply; terraform uses it to compare to you .tf files to determine what has changed -> it is the *source of truth*
+
+* improve performance of huge config files
+* allows collaboration with each other as a team -> but how if the state file is local? and not a good idea to put on Github or cloud because there are sensitive credentials
+
+It is important that only one person makes changes to a configuration with a given state file. 
+
+* state locking - the state file is locked from any changes while a terraform apply is occurring; this protects against errors and misalignment during concurrent changes to infrastructure
+* Github does not offer state locking capabilities; also if a person does not pull the latest state file, there may be terrible roll backs
+
+Solution: Remote state backend -> shared storage solution (S3, terraform cloud, Consul, google cloud storage); auto load the state file when it is needed and upload the new state file automatically; enables state locking -> prevents concurrent changes
+
+* also is encrypted in-transit when uploading to the remote backend
+
+Achieving remote backend with S3 and DynamoDB:
+
+* s3 - store state file
+* dynamodb - handle state locking
+
+terraform { //place in terraform.tf file to seperate the infra config and backend config
+    backend "s3" { //define the type of remote backend 
+    bucket         = "my-terraform-state" //name of the s3 bucket
+    key            = "prod/terraform.tfstate" //s3 object path where the state file will be stored
+    region         = "us-east-1" 
+    dynamodb_table = "terraform-locks" //given table we will use for state locking
+  }
+}
+
+* state file will no longer be in the local directory. The first time you use remote it will ask if the local state should be uploaded
+  
