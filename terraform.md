@@ -569,14 +569,90 @@ Achieving remote backend with S3 and DynamoDB:
 * s3 - store state file
 * dynamodb - handle state locking
 
-terraform { //place in terraform.tf file to seperate the infra config and backend config
-    backend "s3" { //define the type of remote backend 
-    bucket         = "my-terraform-state" //name of the s3 bucket
-    key            = "prod/terraform.tfstate" //s3 object path where the state file will be stored
-    region         = "us-east-1" 
-    dynamodb_table = "terraform-locks" //given table we will use for state locking
-  }
+    terraform { //place in terraform.tf file to seperate the infra config and backend config
+        backend "s3" { //define the type of remote backend 
+        bucket         = "my-terraform-state" //name of the s3 bucket
+        key            = "prod/terraform.tfstate" //s3 object path where the state file will be stored
+        region         = "us-east-1" 
+        dynamodb_table = "terraform-locks" //given table we will use for state locking
+      }
+    }
+
+* state file will no longer be in the local directory. The first time you terraform init to remote, it will upload local state file
+
+
+## Exam Dump Insights
+
+* providers - let terraform know how to interact with a given api (aws, gcp, azure...)
+* modules - instead of starting from 0, you can use modules to reuse some pre-built configs
+      * modules can be taken from the terraform public registry; source = "terraform/..." indicates the public registry
+
+* valid types in terraform are: number, map, list (tuple), number, bool
+
+* must use env variables are bring in data sources from the infra to mask any secrets
+
+* terraform community free (the non-enterprise version of terraform cli) stores state files in terraform.tfstate.d/<workspace_name>/terraform.tfstate
+
+* provider dependencies are determined by looking at the state file and the config files
+
+terraform {
+    parallelism = 10
 }
 
-* state file will no longer be in the local directory. The first time you use remote it will ask if the local state should be uploaded
-  
+* terraform supports 10 concurrent operations by default; set this by adjusting the parallelism parameter; increasing speeds up deployment but may hit rate-limiting errors
+* respects dependency order when doing concurrent operations
+
+* plugins are stored in .terraform/providers directory on the local machine
+
+* terraform plan -refresh-only updates the state file by querying the current infrastructure and updating the state file; useful for ensuring current state is being used
+* terraform apply -refresh-only this reconciles any changes in the infrastructure and updates the state file to reflect that
+* Note: -refresh-only updates terraform's internal memory of the state, but does not actually change the state file -> that only changes when terraform itself makes a change
+
+* can specify empty variables ie variable "example" {}; rememeber that [] are used for lists, {} for maps (objects) which are just dictionaries
+
+* can add a validate block in resource definition blocks to verify the count (or anything else) of a resource during plan and apply phase; like a unit test
+
+* terraform plan -out=Bryan : saves a terraform plan output to a file named Bryan to be used later
+
+* terraform state list: lists all the resources managed by terraform in a state file
+
+* terraform console: like python interactive shell, you try stuff real quick without running the entire program
+
+* workspace - a branch of a particular state; i.e can have prod, dev, stage environments that all use the same state
+* terraform workspace select <name> - switches the a workspace
+
+* HCP Terraform - a seperate environment where terraform runs happen, has everything they need to run; state stored in cloud
+* You can integrate it with your version control service to automatically push changes to infrastructure
+
+* adding an alias line to provider block will allow multiple versions of the same provider type (with different parameters)
+
+* terraform state command can be used to modify the current state, like removing existing resources]
+    * terraform state rm command removes that aformentioned resource from the state file
+    * terraform state mv command renames the local name of this file
+ 
+* You use variables.tf to declare variables and to give default values; the actual values are passed in from the tfvars file or command line or environment variables
+
+* terraform get exclusively downloads modules for updating while terraform init does modules and sets uo backend, directory, much more holisitic than just terraform get
+
+* TF_LOG - an env variable used to log the errors that terraform runs into; TF_LOG = TRACE is most detailed, ERROR is least
+
+* terraform validate - checks syntactical errors or missing requirements in TF code; good to run this before terraform apply
+
+* terraform fmt - fixes the syntax and structure of your terraform code; makes it organized; does not check for any errors within the code only a formatter
+
+* HCP terraform was also formerly known as the terraform cloud; if migrating from local to HCP TF, then the new workspace will use the TF version of the binary used for the migration
+    * Terraform login saves an api token so CLI can talk to the HCP terraform without logging in everytime
+ 
+* If state lock is stuck, than use terraform force-unlock to remove the lock; this may be used if TF crashed during a run or if you are very sure there are no other processes happening; be careful as this can corrupt state file
+
+* a "~" next to a resource name after a terraform plan means the resource will be updating in-place
+
+* () are not valid in terraform for lists, use []
+
+* -backend-config=PATH is used to specify a seperate config file for confidentiality of [=secrets
+
+* when you mark a variable as sensitive, the variable will not be displayed in the terminal, but people looking at the state file will be able to see it
+
+* terraform show - lets you see a human readable version of the state file. Inspection of the state file; can use -json flag to get json
+
+* sentinel = policy as code for the Enterprise products; enables fine-grained, logic-based polciy decisions
