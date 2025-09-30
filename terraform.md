@@ -656,3 +656,32 @@ terraform {
 * terraform show - lets you see a human readable version of the state file. Inspection of the state file; can use -json flag to get json
 
 * sentinel = policy as code for the Enterprise products; enables fine-grained, logic-based polciy decisions
+
+* modules support versioning because there on the terraform registry duh
+
+* TF is idempotent meaning that if you were to run TF repeatedly, the results are the same and predictable
+
+* locals are basically macros that are shared between modules
+
+* main.tf is not required
+
+* terraform agents are like a bridge between the HCP Terraform platform and the infrastructure; these agents are deployed inside the target infrastructure, like an inside agent
+    * terraform plans and apply; these actually make the changes to the infra
+ 
+* terraform destroy -auto-approve : automatically destroys resources without being prompted for confirmation
+
+* if any errors occur with some of the resources, the sucessful resources will remain deployed.
+
+* if a provider doesn't have an alias it is the default provider.
+
+* terraform output - allows you to see the values of outputs quickly
+
+* private registry - allows you to host private modules internally
+
+* in terraform CLI - workspaces are just multiple state files in the same working directory
+
+* before you do terraform import, you have to have a resource block setup with those parameters
+
+* terraform init -upgrade : upgrades plugins to the newest versions that work with the configuration\
+
+* terraform destroy -target=....
